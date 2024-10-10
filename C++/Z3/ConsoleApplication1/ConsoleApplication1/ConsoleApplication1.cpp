@@ -1,12 +1,12 @@
 ﻿#include <iostream>
 #include <fstream>
-#include <string>
 using namespace std;
 
 enum TFile {
 	FileIn, 
 	FileOut
 };
+
 enum TErrors {
 	FailFileOpen = 0,
 	FailFileCreateOrOpen,
@@ -82,11 +82,11 @@ void inData(int& n, int& m, int**& matrix, int inType, fstream& fin, int MAX_LIM
 		}
 	}
 	else {
-		bool isFileOpenSeccess;
+		bool isFileOpenError;
 
 		cout << "\nВведите путь к файлу .txt для ввода данных:";
 		do {
-			isFileOpenSeccess = true;
+			isFileOpenError = false;
 			bool isLimitError = false;
 
 			openFile(fin, FileIn);
@@ -105,21 +105,19 @@ void inData(int& n, int& m, int**& matrix, int inType, fstream& fin, int MAX_LIM
 			if (fin.fail()) {
 				cout << Errors[FailData];
 				fin.close();
-				isFileOpenSeccess = false;
-			}
-
-			if (isLimitError || n > MAX_LIMIT || n < MIN_LIMIT || m > MAX_LIMIT || m < MIN_LIMIT) {
+				isFileOpenError = true;
+			} else if (isLimitError || n > MAX_LIMIT || n < MIN_LIMIT || m > MAX_LIMIT || m < MIN_LIMIT) {
 				cout << Errors[FailLimitOfData];
 				fin.close();
-				isFileOpenSeccess = false;
+				isFileOpenError = true;
 			}
-		} while (!isFileOpenSeccess);
+		} while (isFileOpenError);
 	}
 
 	fin.close();
 }
 
-void outSeddlePoints(int n, int m, int**&matrix, int outType, fstream& fout) {
+void findSeddlePoints(int n, int m, int**&matrix, int outType, fstream& fout) {
 	if (outType == 2)
 		openFile(fout, FileOut);
 
@@ -150,7 +148,7 @@ void outSeddlePoints(int n, int m, int**&matrix, int outType, fstream& fout) {
 
 	if (countOfAnswers == 0) {
 		cout << "В данный матрице нет седловых точек." << endl;
-		if (outType)
+		if (outType == 2)
 			fout << "No saddle point in this matrix." << endl;
 	}
 
@@ -159,7 +157,8 @@ void outSeddlePoints(int n, int m, int**&matrix, int outType, fstream& fout) {
 	delete[] maxColumns;
 	delete[] minRows;
 
-	fout.close();
+	if (outType)
+		fout.close();
 }
 
 void exitProgram(int**&matrix, int matrixLength) {
@@ -190,7 +189,7 @@ int main() {
 	cout << "Введите предпочетаемый тип ввода данных:" << endl;
 	cout << "\t1 - из консоли (по элементу),\n\t2 - из файла (одна строка m и n, дальше элементы в виде таблицы)." << endl;
 	cinWithChecking(inType, 2, 1);
-
+		
 	inData(n, m, matrix, inType, fin, MAX_LIMIT, MIN_LIMIT);
 
 	int outType;
@@ -198,7 +197,7 @@ int main() {
 	cout << "\t1 - только в консоли,\n\t2 - в консоль и в файл." << endl;
 	cinWithChecking(outType, 2, 1);
 
-	outSeddlePoints(n, m, matrix, outType, fout);
+	findSeddlePoints(n, m, matrix, outType, fout);
 
 	exitProgram(matrix, n);
 }

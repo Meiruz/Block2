@@ -5,7 +5,7 @@ enum TErrors {
 	FailData,
 	FailLimitOfData
 };
-const string ERRORS[3]{
+const string ERRORS[2]{
 	"Некорректные данные данные. Попробуйте еще раз.",
 	"Ваше значение не соответствует числовым ограничениям. Попробуйте еще раз.",
 };
@@ -15,7 +15,7 @@ void cinBufClean() {
 	while (cin.get() != '\n');
 }
 
-void splitNumToArray(unsigned long long num, int* arr, int numLength) {
+void splitNumToArray(int num, int* arr, int numLength) {
 	while (num > 0) {
 		arr[--numLength] = num % 10;
 		num = num / 10;
@@ -37,21 +37,18 @@ void cinWithChecking(int& value, const int& MAX_LIMIT, const int& MIN_LIMIT) {
 
 }
 
-void outElement(char element, int count, bool startEndl = false, bool endEndl = false) {
-	if (startEndl) {
+void outElement(char element, int count, bool isStartEndl = false, bool isEndEndl = false) {
+	if (isStartEndl) 
 		cout << endl;
-	}
 
-	for (int i = 0; i < count; i++) {
+	for (int i = 0; i < count; i++) 
 		cout << element;
-	}
 
-	if (endEndl) {
+	if (isEndEndl) 
 		cout << endl;
-	}
 }
 
-int getNumLength(unsigned long long num) {
+int getNumLength(int num) {
 	if (num == 0)
 		return 1;
 
@@ -70,15 +67,18 @@ void divisionOfElements(int* arrFirstNum, int& firstNum, int& secondNum, int& fi
 	int underlinedNum = 0;
 	int addUnderlinedRange = 1;
 	int underlinedNumLength = 0;
+	int checkPos = 0;
 	bool isFirst = true;
 
-	while (pos + addUnderlinedRange - 1 < firstNumLength) {
+	while (checkPos < firstNumLength) {
 		// Get underlineNum
-		while (pos + addUnderlinedRange - 1 < firstNumLength && underlinedNum < secondNum) {
-			underlinedNum = underlinedNum * 10 + arrFirstNum[pos + addUnderlinedRange - 1];
+		while (checkPos < firstNumLength && underlinedNum < secondNum) {
+			underlinedNum = underlinedNum * 10 + arrFirstNum[checkPos];
 			addUnderlinedRange++;
+			checkPos++;
 		}
 		addUnderlinedRange--;
+		checkPos--;
 
 		// Minus round
 		if (!isFirst) {
@@ -113,6 +113,8 @@ void divisionOfElements(int* arrFirstNum, int& firstNum, int& secondNum, int& fi
 			addUnderlinedRange--;
 		}
 
+		checkPos = pos + addUnderlinedRange - 1;
+
 		isFirst = false;
 	}
 
@@ -132,12 +134,11 @@ int main() {
 	setlocale(LC_ALL, "Russian");
 
 	const int MIN_LIMIT = 1;
-	const int MAX_LIMIT = 2000000000;
+	const int MAX_LIMIT = 200000000;
 
 	cout << "Программа для деления чисел в столбик." << endl << endl;
 
 	int firstNum, secondNum;
-	bool isFirst = true;
 	bool isFail = true;
 
 	cout << "Введите значение делимого от " << MIN_LIMIT << " до " << MAX_LIMIT << ':';
@@ -149,12 +150,12 @@ int main() {
 	int firstNumLength;
 	firstNumLength = getNumLength(firstNum);
 
-	int* arr = new int[firstNumLength];
-	splitNumToArray(firstNum, arr, firstNumLength);
+	int* arrNum = new int[firstNumLength];
+	splitNumToArray(firstNum, arrNum, firstNumLength);
 
-	divisionOfElements(arr, firstNum, secondNum, firstNumLength);
+	divisionOfElements(arrNum, firstNum, secondNum, firstNumLength);
 
-	delete[] arr;
+	delete[] arrNum;
 
 	exitProgram();
 }
