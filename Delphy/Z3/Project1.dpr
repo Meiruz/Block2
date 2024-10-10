@@ -1,7 +1,8 @@
 Program Laba3;
 
-Uses
-    SysUtils;
+uses
+  SysUtils,
+  Unit1 in 'Unit1.pas';
 
 Type
     TErrors = (FailFileOpen = 0, FailFileCreateOrOpen, FailData,
@@ -199,10 +200,10 @@ Var
     IsDataOk: Boolean;
 Begin
     If InType = 1 Then
-        InDataWithConsole(InputFile, N, M, Matrix)
+        InDataWithConsole(InputFile, M, N, Matrix)
     Else
         Repeat
-            IsDataOk := InDataWithFile(InputFile, N, M, Matrix);
+            IsDataOk := InDataWithFile(InputFile, M, N, Matrix);
         Until IsDataOk;
 End;
 
@@ -219,13 +220,13 @@ Begin
     SetLength(MaxColumns, N);
 
     For I := 0 To High(MinRows) Do
-    Begin
         MinRows[I] := MAX_LIMIT + 1;
-        MaxColumns[I] := MIN_LIMIT - 1;
-    End;
 
-    For I := 0 To High(MinRows) Do
-        For J := 0 To High(MaxColumns) Do
+    for I := 0 To High(MaxColumns) Do
+        MaxColumns[I] := MIN_LIMIT - 1;
+
+    For I := 0 To High(Matrix) Do
+        For J := 0 To High(Matrix[i]) Do
         Begin
             If (Matrix[I, J] < MinRows[I]) Then
                 MinRows[I] := Matrix[I, J];
@@ -287,15 +288,8 @@ Begin
 
     InData(M, N, Matrix, InType);
 
-    For Var I := 0 To High(Matrix) Do
-    Begin
-        For Var J := 0 To High(Matrix) Do
-            Write(Matrix[I, J]);
-        Writeln;
-    End;
-
     Writeln('¬ведите предпочетаемый тип вывода данных: ');
-    Writeln(#9, '1 - только в консоли,,', #10#13#9, '2 - в консоль и в файл.');
+    Writeln(#9, '1 - только в консоли,', #10#13#9, '2 - в консоль и в файл.');
 
     InWithChecking(ConsoleFile, OutType, 2, 1, 1);
     Close(ConsoleFile);
