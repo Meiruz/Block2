@@ -1,8 +1,7 @@
 Program Laba3;
 
-uses
-  SysUtils,
-  Unit1 in 'Unit1.pas';
+Uses
+    SysUtils;
 
 Type
     TErrors = (FailFileOpen = 0, FailFileCreateOrOpen, FailData,
@@ -29,7 +28,7 @@ Begin
     If (Num > MAX_LIMIT_NUM) Or (Num < MIN_LIMIT_NUM) Then
     Begin
         Write(ERRORS[Ord(FailLimitOfData)]);
-        CheckNumForLimitError := False;
+        CheckNumForLimitError := True;
     End
     Else
         CheckNumForLimitError := False;
@@ -42,12 +41,20 @@ Var
 Begin
     IsFail := False;
 
-    Try
-        Read(InputFile, Num);
-    Except
+    if EoF(InputFile) then
+    begin
         Write(ERRORS[Ord(FailData)]);
         IsFail := True;
-    End;
+    end
+    else
+    begin
+        Try
+            Read(InputFile, Num);
+        Except
+            Write(ERRORS[Ord(FailData)]);
+            IsFail := True;
+        End;
+    end;
 
     If Not IsFail Then
         IsFail := CheckNumForLimitError(Num, MAX_LIMIT_NUM, MIN_LIMIT_NUM);
@@ -56,9 +63,9 @@ Begin
         InWithChecking(InputFile, Num, MAX_LIMIT, MIN_LIMIT, InType);
 
     If IsFail Then
-        InWithChecking := False
+        InWithChecking := True
     Else
-        InWithChecking := True;
+        InWithChecking := False;
 End;
 
 Procedure StrToLow(Var Str: String);
@@ -165,15 +172,17 @@ Function InDataWithFile(Var InputFile: TextFile; Var M, N: Integer;
     Var Matrix: TMatrix): Boolean;
 Var
     I, J: Integer;
+    IsNotEnd: boolean;
 Begin
+    IsNotEnd := true;
     OpenFile(InputFile, FileIn);
 
-    If Not InWithChecking(InputFile, N, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE, 2) Then
+    If InWithChecking(InputFile, N, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE, 2) Then
     Begin
         InDataWithFile := False;
     End;
 
-    If Not InWithChecking(InputFile, M, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE, 2) Then
+    If InWithChecking(InputFile, M, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE, 2) Then
     Begin
         InDataWithFile := False;
     End;
@@ -183,14 +192,16 @@ Begin
     Begin
         SetLength(Matrix[I], N);
         For J := 0 To High(Matrix[I]) Do
-            If Not InWithChecking(InputFile, Matrix[I][J], MAX_LIMIT,
-                MIN_LIMIT, 2) Then
+            If (isNotEnd) and (InWithChecking(InputFile, Matrix[I][J], MAX_LIMIT,
+                MIN_LIMIT, 2)) Then
             Begin
                 InDataWithFile := False;
+                IsNotEnd := false;
             End;
     End;
 
-    InDataWithFile := True;
+    if isNotEnd then
+        InDataWithFile := True;
     Close(InputFile);
 End;
 
@@ -222,11 +233,11 @@ Begin
     For I := 0 To High(MinRows) Do
         MinRows[I] := MAX_LIMIT + 1;
 
-    for I := 0 To High(MaxColumns) Do
+    For I := 0 To High(MaxColumns) Do
         MaxColumns[I] := MIN_LIMIT - 1;
 
     For I := 0 To High(Matrix) Do
-        For J := 0 To High(Matrix[i]) Do
+        For J := 0 To High(Matrix[I]) Do
         Begin
             If (Matrix[I, J] < MinRows[I]) Then
                 MinRows[I] := Matrix[I, J];
@@ -259,6 +270,20 @@ Begin
         Close(OutputFile);
 End;
 
+Procedure OutMatrix(Matrix: TMatrix);
+Var
+    I, J: Integer;
+Begin
+    Writeln;
+    For I := 0 To High(Matrix) Do
+    Begin
+        For J := 0 To High(Matrix[I]) Do
+            Write(Matrix[I, J], ' ');
+        Writeln;
+    End;
+    Writeln;
+End;
+
 Procedure ExitProgram();
 Begin
     Writeln('ƒл€ выхода из программы нажмите Enter...');
@@ -288,6 +313,8 @@ Begin
 
     InData(M, N, Matrix, InType);
 
+    OutMatrix(Matrix);
+
     Writeln('¬ведите предпочетаемый тип вывода данных: ');
     Writeln(#9, '1 - только в консоли,', #10#13#9, '2 - в консоль и в файл.');
 
@@ -297,4 +324,5 @@ Begin
     FindSeddlePoints(Matrix, M, N, OutType);
 
     ExitProgram();
+
 End.

@@ -1,143 +1,216 @@
 ﻿#include <iostream>
 #include <fstream>
-#include <string>
 using namespace std;
 
 enum TFile {
 	FileIn,
 	FileOut
 };
+
 enum TErrors {
 	FailFileOpen = 0,
 	FailFileCreateOrOpen,
 	FailData,
-	FailLimitOfData
+	FailLimitOfData,
+	NotTXTFile
 };
-const string Errors[4]{
+const string ERRORS[5]{
 	"Неудалось открыть файл. Попробуйте еще раз, проверив путь и имя файла.",
 	"Неудалось открыть или создать файл. Попробуйте еще раз, проверив путь и имя файла.",
 	"Некорректные данные данные. Попробуйте еще раз.",
-	"Ваше значение не соответствует числовым ограничениям. Попробуйте еще раз."
+	"Ваше значение не соответствует числовым ограничениям. Попробуйте еще раз.",
+	"Расширение файла должно быть TXT. Попробуйте еще раз."
 };
+const int MIN_LIMIT_SIZE = 0;
+const int MAX_LIMIT_SIZE = 100;
+const int MIN_LIMIT = -100;
+const int MAX_LIMIT = 100;
 
 void cinBufClean() {
 	cin.clear();
 	while (cin.get() != '\n');
 }
 
-void inWithChecking(int& value, const int& MAX_LIMIT, const int& MIN_LIMIT) {
-	cin >> value;
+void strToLow(string &str) {
+	for (char& sym : str) {
+		int asciiValue = (int)sym;
+		if (asciiValue > 64 && asciiValue < 91)
+			sym = (char)(asciiValue + 32);
+	}
+}
+
+bool checkFileNotTxt(string pathToFile) {
+	strToLow(pathToFile);
+
+	int stringLength = pathToFile.length();
+
+	if (stringLength < 4)
+		return true;
+	if ((pathToFile[stringLength - 1] == 't') &&
+		(pathToFile[stringLength - 2] == 'x') &&
+		(pathToFile[stringLength - 3] == 't') &&
+		(pathToFile[stringLength - 4] == '.'))
+		return false;
+	return true;
+}
+
+void cinWithChecking(int& num, const int MAX_LIMIT_NUM, const int MIN_LIMIT_NUM) {
+	cin >> num;
 
 	if (cin.fail() || cin.get() != '\n') {
-		cout << Errors[FailData] << endl;
+		cout << ERRORS[FailData] << endl;
 		cinBufClean();
-		inWithChecking(value, MAX_LIMIT, MIN_LIMIT);
+		cinWithChecking(num, MAX_LIMIT_NUM, MIN_LIMIT_NUM);
 	}
-	else if (value > MAX_LIMIT || value < MIN_LIMIT) {
-		cout << Errors[FailLimitOfData] << endl;
-		inWithChecking(value, MAX_LIMIT, MIN_LIMIT);
+	else if (num > MAX_LIMIT_NUM || num < MIN_LIMIT_NUM) {
+		cout << ERRORS[FailLimitOfData] << endl;
+		cinWithChecking(num, MAX_LIMIT_NUM, MIN_LIMIT_NUM);
 	}
+
+}
+
+bool finWithChecking(fstream& fin, int& num, const int MAX_LIMIT_NUM, const int MIN_LIMIT_NUM) {
+	bool osFail = false;
+
+	fin >> num;
+
+	if (fin.fail()) {
+		cout << ERRORS[FailData] << endl;
+		return true;
+	}
+	else if (num > MAX_LIMIT_NUM || num < MIN_LIMIT_NUM) {
+		cout << ERRORS[FailLimitOfData] << endl;
+		return true;
+	}
+	return false;
 }
 
 void openFile(fstream& file, TFile fileType) {
+	cout << "\nВведите путь к файлу .txt для " << (fileType == FileIn ? "ввода" : "вывода") << " данных : " << endl;
 	string filename;
 	cin >> filename;
 
-	file.open(filename, fileType == FileIn ? ios::in : ios::out);
-	if (!file.is_open()) {
-		cout << Errors[FailFileOpen];
-		file.close();
+	if (checkFileNotTxt(filename)) {
+		cout << ERRORS[NotTXTFile];
 		openFile(file, fileType);
 	}
-}
-
-void inData(int& n, int**& matrix, int inType, fstream& fin, int MAX_LIMIT, int MIN_LIMIT) {
-	if (inType == 1) {
-		cout << "Введите порядок матрицы 2:" << endl;
-		inWithChecking(n, MAX_LIMIT, MIN_LIMIT);
-
-		n *= 2;
-
-		matrix = new int* [n];
-		for (int i = 0; i < n; i++) {
-			matrix[i] = new int[n];
-			for (int j = 0; j < n; j++) {
-				cout << "Введите элемент матрицы [" << i + 1 << ',' << j + 1 << "]:" << endl;
-				inWithChecking(matrix[i][j], MAX_LIMIT, -MAX_LIMIT);
-			}
+	else {
+		file.open(filename, fileType == FileIn ? ios::in : ios::out);
+		if (!file.is_open()) {
+			cout << ERRORS[FailFileOpen];
+			file.close();
+			openFile(file, fileType);
 		}
 	}
-	else {
-		bool isFileOpenSeccess;
+}
 
-		cout << "\nВведите путь к файлу .txt для ввода данных:";
-		do {
-			isFileOpenSeccess = true;
-			bool isLimitError = false;
+void inDataWithConsole(int& m, int& n, int**& matrix) {
+	cout << "Введите размерность 2M квадратной матрицы: " << endl;
+	cinWithChecking(m, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE);
 
-			openFile(fin, FileIn);
-			fin >> n;
+	m *= 2;
+	n = m;
 
-			n *= 2;
-
-			matrix = new int* [n];
-			for (int i = 0; i < n && !isLimitError; i++) {
-				matrix[i] = new int[n];
-				for (int j = 0; j < n && !isLimitError; j++) {
-					fin >> matrix[i][j];
-					if (matrix[i][j] > MAX_LIMIT || matrix[i][j] < MIN_LIMIT)
-						isLimitError = true;
-				}
-			}
-
-			if (fin.fail()) {
-				cout << Errors[FailData];
-				fin.close();
-				isFileOpenSeccess = false;
-			}
-
-			if (isLimitError || n > MAX_LIMIT || n < MIN_LIMIT) {
-				cout << Errors[FailLimitOfData];
-				fin.close();
-				isFileOpenSeccess = false;
-			}
-		} while (!isFileOpenSeccess);
+	matrix = new int* [m];
+	for (int i = 0; i < m; i++) {
+		matrix[i] = new int[n];
+		for (int j = 0; j < n; j++) {
+			cout << "Введите элемент матрицы [" << i + 1 << ',' << j + 1 << "]:" << endl;
+			cinWithChecking(matrix[i][j], MAX_LIMIT, MIN_LIMIT);
+		}
 	}
 }
 
-void changeMatrix(int **&matrix, int n) {
-	int** newMatrix = new int*[n];
-	for (int i = 0; i < n; i++)
+bool inDataWithFile(int& m, int& n, int**& matrix, fstream& fin) {
+	openFile(fin, FileIn);
+
+	if (finWithChecking(fin, m, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE))
+		return true;
+	
+	m *= 2;
+	n = m;
+
+	matrix = new int*[m];
+	for (int i = 0; i < m; i++) {
+		matrix[i] = new int[n];
+		for (int j = 0; j < n; j++)
+			if (finWithChecking(fin, matrix[i][j], MAX_LIMIT, MIN_LIMIT)) {
+				fin.close();
+				return true;
+			}
+	}
+
+	fin.close();
+	return false;
+}
+
+void inData(int& m, int& n, int**& matrix, int inType) {
+	bool isDataOk;
+
+	if (inType == 1)
+		inDataWithConsole(m, n, matrix);
+	else {
+		fstream fin;
+		do {
+			isDataOk = inDataWithFile(m, n, matrix, fin);
+		} while (isDataOk);
+	}
+}
+
+void outMatrix(int m, int n, int**& arr, int outType) {
+	fstream fout;
+	if (outType == 2)
+		openFile(fout, FileOut);
+
+	cout << endl;
+
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			cout << arr[i][j] << ' ';
+			if (outType == 2)
+				fout << arr[i][j] << ' ';
+		}
+		cout << endl;
+		if (outType == 2)
+			fout << endl;
+	}
+
+	cout << endl;
+
+	fout.close();
+}
+
+void changeMatrix(int**& matrix, int m, int n) {
+	int** newMatrix = new int* [m];
+	for (int i = 0; i < m; i++)
 		newMatrix[i] = new int[n] {0};
 
-	for (int i = 0; i < n; i++)
+	for (int i = 0; i < m; i++)
 		for (int j = 0; j < n; j++)
-			if (i < n / 2) 
-				if (j < n / 2) 
+			if (i < n / 2)
+				if (j < n / 2)
 					newMatrix[i + n / 2][j + n / 2] = matrix[i][j];
 				else
 					newMatrix[i + n / 2][j - n / 2] = matrix[i][j];
-			else 
+			else
 				if (j < n / 2)
 					newMatrix[i - n / 2][j] = matrix[i][j];
 				else
 					newMatrix[i - n / 2][j] = matrix[i][j];
 
-	for (int i = 0; i < n; i++)
+	for (int i = 0; i < m; i++)
 		for (int j = 0; j < n; j++)
 			matrix[i][j] = newMatrix[i][j];
 
-	for (int i = 0; i < n; i++)
+	for (int i = 0; i < m; i++)
 		delete[] newMatrix[i];
 	delete[] newMatrix;
 }
 
-void exitProgram(fstream& fin, fstream& fout, int**& matrix, int matrixLength) {
-	for (int i = 0; i < matrixLength; i++)
+void exitProgram(int**& matrix, int m) {
+	for (int i = 0; i < m; i++)
 		delete[] matrix[i];
 	delete[] matrix;
-	fin.close();
-	fout.close();
 
 	cout << "Для выхода из программы нажмите Enter...";
 	cin.get();
@@ -146,47 +219,31 @@ void exitProgram(fstream& fin, fstream& fout, int**& matrix, int matrixLength) {
 int main() {
 	setlocale(LC_ALL, "Russian");
 
-	cout << "Программа для изменения положения подматриц квадратной матрицы порядка 2n." << endl;
+	cout << "Программа для определения \"седловой\" точки матрицы." << endl;
 
-	const int MIN_LIMIT = 0;
-	const int MAX_LIMIT = 100;
-	cout << "Все значения матрицы должны быть от " << -MAX_LIMIT << " до " << MAX_LIMIT << '.' << endl;
-	cout << "Порядок матрицы n должен быть от " << MIN_LIMIT << " до " << MAX_LIMIT << '.' << endl << endl;
+	cout << "Все значения матрицы должны быть от " << MIN_LIMIT << " до " << MAX_LIMIT << '.' << endl;
+	cout << "Размеры матрицы MxN быть от " << MIN_LIMIT_SIZE << " до " << MAX_LIMIT_SIZE << '.' << endl << endl;
 
-	fstream fin, fout;
 	int inType = 0;
-	int n;
+	int m, n;
 	int** matrix;
 
-	cout << "Введите предпочетаемый тип ввода данных:" << endl;
-	cout << "\t1 - из консоли (по элементу),\n\t2 - из файла (одна строка n, дальше элементы в виде таблицы)." << endl;
-	inWithChecking(inType, 2, 1);
+	cout << "Введите предпочитаемый тип ввода данных:" << endl;
+	cout << "\t1 - из консоли (по элементу),\n\t2 - из файла (одна строка m и n, дальше элементы в виде таблицы)." << endl;
+	cinWithChecking(inType, 2, 1);
 
-	inData(n, matrix, inType, fin, MAX_LIMIT, MIN_LIMIT);
+	inData(m, n, matrix, inType);
+
+	outMatrix(m, n, matrix, 1);
 
 	int outType;
-	cout << "Введите предпочетаемый тип вывода данных:" << endl;
-	cout << "\t1 - только в консоль,\n\t2 - в консоль и в файл." << endl;
-	inWithChecking(outType, 2, 1);
-	
-	changeMatrix(matrix, n);
-	
-	if (outType == 2)
-		openFile(fout, FileOut);
+	cout << "Введите предпочитаемый тип вывода данных:" << endl;
+	cout << "\t1 - только в консоли,\n\t2 - в консоль и в файл." << endl;
+	cinWithChecking(outType, 2, 1);
 
-	cout << endl;
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < n; j++) {
-			cout << matrix[i][j] << ' ';
-			if (outType == 2)
-				fout << matrix[i][j] << ' ';
-		}
+	changeMatrix(matrix, m, n);
 
-		cout << endl;
-		if (outType == 2)
-			fout << endl;
-	}
-	cout << endl;
+	outMatrix(m, n, matrix, outType);
 
-	exitProgram(fin, fout, matrix, n);
+	exitProgram(matrix, m);
 }

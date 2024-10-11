@@ -1,0 +1,325 @@
+Program Laba3;
+
+Uses
+    SysUtils;
+
+Type
+    TErrors = (FailFileOpen = 0, FailFileCreateOrOpen, FailData,
+        FailLimitOfData, NotTXTFile);
+    TFile = (FileIn, FileOut, FileCons);
+    TMatrix = Array Of Array Of Integer;
+    TArray = Array Of Integer;
+
+Const
+    ERRORS: Array [0 .. 4] Of String =
+        ('Не удалось открыть файл или прочитать данные. Попробуйте еще раз, проверив путь и имя файла.',
+        'Не удалось открыть или создать файл. Попробуйте еще раз, проверив путь и имя файла.',
+        'Некорректные данные данные. Попробуйте еще раз.',
+        'Ваше значение не соответствует числовым ограничениям. Попробуйте еще раз.',
+        'Расширение файла должно быть TXT. Попробуйте еще раз.');
+    MIN_LIMIT = -100;
+    MAX_LIMIT = 100;
+    MIN_LIMIT_SIZE = 0;
+    MAX_LIMIT_SIZE = 100;
+
+Function CheckNumForLimitError(Num: Integer;
+    Const MAX_LIMIT_NUM, MIN_LIMIT_NUM: Integer): Boolean;
+Begin
+    If (Num > MAX_LIMIT_NUM) Or (Num < MIN_LIMIT_NUM) Then
+    Begin
+        Write(ERRORS[Ord(FailLimitOfData)]);
+        CheckNumForLimitError := True;
+    End
+    Else
+        CheckNumForLimitError := False;
+End;
+
+Function InWithChecking(Var InputFile: TextFile; Var Num: Integer;
+    Const MAX_LIMIT_NUM, MIN_LIMIT_NUM: Integer; InType: Integer): Boolean;
+Var
+    IsFail: Boolean;
+Begin
+    IsFail := False;
+
+    if EoF(InputFile) then
+    begin
+        Write(ERRORS[Ord(FailData)]);
+        Writeln('eOF');
+        IsFail := True;
+    end
+    else
+    begin
+        Try
+            Read(InputFile, Num);
+        Except
+            Write(ERRORS[Ord(FailData)]);
+            IsFail := True;
+        End;
+    end;
+
+    If Not IsFail Then
+        IsFail := CheckNumForLimitError(Num, MAX_LIMIT_NUM, MIN_LIMIT_NUM);
+
+    If (IsFail) And (InType = 1) Then
+        InWithChecking(InputFile, Num, MAX_LIMIT, MIN_LIMIT, InType);
+
+    If IsFail Then
+        InWithChecking := True
+    Else
+        InWithChecking := False;
+End;
+
+Procedure StrToLow(Var Str: String);
+Var
+    I, AsciiValue: Integer;
+Begin
+    For I := 1 To High(Str) Do
+    Begin
+        AsciiValue := Ord(Str[I]);
+        If (AsciiValue > 64) And (AsciiValue < 91) Then
+            Str[I] := Char(AsciiValue + 32);
+    End;
+End;
+
+Function CheckFileNotTxt(PathToFile: String): Boolean;
+Var
+    StringLength: Integer;
+Begin
+    StrToLow(PathToFile);
+
+    StringLength := Length(PathToFile);
+
+    If StringLength < 4 Then
+        CheckFileNotTxt := True
+    Else
+    Begin
+        If (PathToFile[StringLength] = 't') And
+            (PathToFile[StringLength - 1] = 'x') And
+            (PathToFile[StringLength - 2] = 't') And
+            (PathToFile[StringLength - 3] = '.') Then
+            CheckFileNotTxt := False
+        Else
+            CheckFileNotTxt := True;
+    End;
+End;
+
+Procedure OpenFile(Var OpendFile: TextFile; FileType: TFile);
+Var
+    PathToFile: String;
+    IsOk: Boolean;
+Begin
+    IsOk := True;
+
+    If FileType = FileIn Then
+        Writeln(#10#13, 'Введите путь к файлу .txt для ввода данных: ')
+    Else
+        Writeln(#10#13, 'Введите путь к файлу .txt для вывода данных: ');
+    Readln(PathToFile);
+
+    If CheckFileNotTxt(PathToFile) Then
+    Begin
+        Writeln(ERRORS[Ord(NotTXTFile)]);
+        IsOk := False;
+        OpenFile(OpendFile, FileType);
+    End;
+
+    If IsOk Then
+        Try
+            AssignFile(OpendFile, PathToFile);
+            If FileType = FileIn Then
+                Reset(OpendFile)
+            Else
+                Rewrite(OpendFile);
+        Except
+            If FileType = FileIn Then
+                Writeln(ERRORS[Ord(FailFileOpen)])
+            Else
+                Writeln(ERRORS[Ord(FailFileCreateOrOpen)]);
+
+            IsOk := False;
+            OpenFile(OpendFile, FileType);
+        End;
+End;
+
+Procedure InDataWithConsole(Var InputFile: TextFile; Var M, N: Integer;
+    Var Matrix: TMatrix);
+Var
+    I, J: Integer;
+Begin
+    AssignFile(InputFile, '');
+    Reset(InputFile);
+
+    Writeln('Введите колчество строк M матрицы: ');
+    InWithChecking(InputFile, M, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE, 1);
+
+    Writeln('Введите колчество столбцов N матрицы: ');
+    InWithChecking(InputFile, N, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE, 1);
+
+    SetLength(Matrix, M);
+    For I := 0 To High(Matrix) Do
+    Begin
+        SetLength(Matrix[I], N);
+        For J := 0 To High(Matrix[I]) Do
+        Begin
+            Write('Введите элемент матрицы [', I + 1, ', ', J + 1, ']: ');
+            InWithChecking(InputFile, Matrix[I][J], MAX_LIMIT, MIN_LIMIT, 1);
+        End;
+    End;
+
+    Close(InputFile);
+End;
+
+Function InDataWithFile(Var InputFile: TextFile; Var M, N: Integer;
+    Var Matrix: TMatrix): Boolean;
+Var
+    I, J: Integer;
+Begin
+    OpenFile(InputFile, FileIn);
+
+    If InWithChecking(InputFile, N, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE, 2) Then
+    Begin
+        InDataWithFile := False;
+    End;
+
+    If InWithChecking(InputFile, M, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE, 2) Then
+    Begin
+        InDataWithFile := False;
+    End;
+
+    SetLength(Matrix, M);
+    For I := 0 To High(Matrix) Do
+    Begin
+        SetLength(Matrix[I], N);
+        For J := 0 To High(Matrix[I]) Do
+            If InWithChecking(InputFile, Matrix[I][J], MAX_LIMIT,
+                MIN_LIMIT, 2) Then
+            Begin
+                InDataWithFile := False;
+            End;
+    End;
+
+    InDataWithFile := True;
+    Close(InputFile);
+End;
+
+Procedure InData(Var M, N: Integer; Var Matrix: TMatrix; InType: Integer);
+Var
+    InputFile: TextFile;
+    IsDataOk: Boolean;
+Begin
+    If InType = 1 Then
+        InDataWithConsole(InputFile, M, N, Matrix)
+    Else
+        Repeat
+            IsDataOk := InDataWithFile(InputFile, M, N, Matrix);
+        Until IsDataOk;
+End;
+
+Procedure FindSeddlePoints(Var Matrix: TMatrix; M, N, OutType: Integer);
+Var
+    MinRows, MaxColumns: TArray;
+    I, J, CountOfAnswers: Integer;
+    OutputFile: TextFile;
+Begin
+    If (OutType = 2) Then
+        OpenFile(OutputFile, FileOut);
+
+    SetLength(MinRows, M);
+    SetLength(MaxColumns, N);
+
+    For I := 0 To High(MinRows) Do
+        MinRows[I] := MAX_LIMIT + 1;
+
+    For I := 0 To High(MaxColumns) Do
+        MaxColumns[I] := MIN_LIMIT - 1;
+
+    For I := 0 To High(Matrix) Do
+        For J := 0 To High(Matrix[I]) Do
+        Begin
+            If (Matrix[I, J] < MinRows[I]) Then
+                MinRows[I] := Matrix[I, J];
+            If (Matrix[I, J] > MaxColumns[J]) Then
+                MaxColumns[J] := Matrix[I, J];
+        End;
+
+    CountOfAnswers := 0;
+    Writeln;
+    For I := 0 To High(MinRows) Do
+        For J := 0 To High(MaxColumns) Do
+            If MinRows[I] = MaxColumns[J] Then
+            Begin
+                Inc(CountOfAnswers);
+                Writeln(MinRows[I], ' - [', I + 1, ',', J + 1, ']');
+                If OutType = 2 Then
+                    Writeln(OutputFile, MinRows[I], ' - [', I + 1, ',',
+                        J + 1, ']');
+            End;
+
+    If CountOfAnswers = 0 Then
+    Begin
+        Writeln('В данный матрице нет седловых точек.');
+        If OutType = 2 Then
+            Writeln(OutputFile, 'В данный матрице нет седловых точек.');
+    End;
+
+    Writeln;
+    If OutType = 2 Then
+        Close(OutputFile);
+End;
+
+Procedure OutMatrix(Matrix: TMatrix);
+Var
+    I, J: Integer;
+Begin
+    Writeln;
+    For I := 0 To High(Matrix) Do
+    Begin
+        For J := 0 To High(Matrix[I]) Do
+            Write(Matrix[I, J], ' ');
+        Writeln;
+    End;
+    Writeln;
+End;
+
+Procedure ExitProgram();
+Begin
+    Writeln('Для выхода из программы нажмите Enter...');
+    Readln;
+End;
+
+Var
+    N, M, InType, OutType: Integer;
+    Matrix: TMatrix;
+    ConsoleFile: TextFile;
+
+Begin
+    Writeln('Программа для определения "седловой" точки матрицы.');
+
+    Writeln('Все значения матрицы должны быть от ', MIN_LIMIT, ' до ',
+        MAX_LIMIT, '.');
+    Writeln('Размеры матрицы MxN быть от ', MIN_LIMIT_SIZE, ' до ',
+        MAX_LIMIT_SIZE, '.');
+
+    Writeln('Введите предпочетаемый тип ввода данных: ');
+    Writeln(#9, '1 - из консоли (по элементу),', #10#13#9,
+        '2 - из файла (одна строка m и n, дальше элементы в виде таблицы).');
+
+    AssignFile(ConsoleFile, '');
+    Reset(ConsoleFile);
+    InWithChecking(ConsoleFile, InType, 2, 1, 1);
+
+    InData(M, N, Matrix, InType);
+
+    OutMatrix(Matrix);
+
+    Writeln('Введите предпочетаемый тип вывода данных: ');
+    Writeln(#9, '1 - только в консоли,', #10#13#9, '2 - в консоль и в файл.');
+
+    InWithChecking(ConsoleFile, OutType, 2, 1, 1);
+    Close(ConsoleFile);
+
+    FindSeddlePoints(Matrix, M, N, OutType);
+
+    ExitProgram();
+
+End.

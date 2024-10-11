@@ -78,7 +78,6 @@ void divisionOfElements(int* arrFirstNum, int& firstNum, int& secondNum, int& fi
 			checkPos++;
 		}
 		addUnderlinedRange--;
-		checkPos--;
 
 		// Minus round
 		if (!isFirst) {
