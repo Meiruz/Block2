@@ -41,20 +41,20 @@ Var
 Begin
     IsFail := False;
 
-    if EoF(InputFile) then
-    begin
+    If EoF(InputFile) Then
+    Begin
         Write(ERRORS[Ord(FailData)]);
         IsFail := True;
-    end
-    else
-    begin
+    End
+    Else
+    Begin
         Try
             Read(InputFile, Num);
         Except
             Write(ERRORS[Ord(FailData)]);
             IsFail := True;
         End;
-    end;
+    End;
 
     If Not IsFail Then
         IsFail := CheckNumForLimitError(Num, MAX_LIMIT_NUM, MIN_LIMIT_NUM);
@@ -172,9 +172,9 @@ Function InDataWithFile(Var InputFile: TextFile; Var M, N: Integer;
     Var Matrix: TMatrix): Boolean;
 Var
     I, J: Integer;
-    IsNotEnd: boolean;
+    IsNotEnd: Boolean;
 Begin
-    IsNotEnd := true;
+    IsNotEnd := True;
     OpenFile(InputFile, FileIn);
 
     If InWithChecking(InputFile, N, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE, 2) Then
@@ -192,15 +192,16 @@ Begin
     Begin
         SetLength(Matrix[I], N);
         For J := 0 To High(Matrix[I]) Do
-            If (isNotEnd) and (InWithChecking(InputFile, Matrix[I][J], MAX_LIMIT,
+            If (IsNotEnd) And
+                (InWithChecking(InputFile, Matrix[I][J], MAX_LIMIT,
                 MIN_LIMIT, 2)) Then
             Begin
                 InDataWithFile := False;
-                IsNotEnd := false;
+                IsNotEnd := False;
             End;
     End;
 
-    if isNotEnd then
+    If IsNotEnd Then
         InDataWithFile := True;
     Close(InputFile);
 End;
@@ -303,7 +304,7 @@ Begin
     Writeln('Размеры матрицы MxN быть от ', MIN_LIMIT_SIZE, ' до ',
         MAX_LIMIT_SIZE, '.');
 
-    Writeln('Введите предпочетаемый тип ввода данных: ');
+    Writeln('Введите предпочитаемый тип ввода данных: ');
     Writeln(#9, '1 - из консоли (по элементу),', #10#13#9,
         '2 - из файла (одна строка m и n, дальше элементы в виде таблицы).');
 
@@ -315,7 +316,7 @@ Begin
 
     OutMatrix(Matrix);
 
-    Writeln('Введите предпочетаемый тип вывода данных: ');
+    Writeln('Введите предпочитаемый тип вывода данных: ');
     Writeln(#9, '1 - только в консоли,', #10#13#9, '2 - в консоль и в файл.');
 
     InWithChecking(ConsoleFile, OutType, 2, 1, 1);

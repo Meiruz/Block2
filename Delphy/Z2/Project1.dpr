@@ -86,7 +86,7 @@ Procedure DivisonOfElements(Var ArrFirstNum: TArray;
 Var
     Pos, UnderlinedNum, AddUnderlinedRange, UnderlinedNumLength,
         CheckPos: Integer;
-    divisionAns, roundDivision, divisionPos, newUnderlinedRange: integer;
+    DivisionAns, RoundDivision, DivisionPos, NewUnderlinedRange: Integer;
     IsNotFirst: Boolean;
 Begin
     Pos := 0;
@@ -97,7 +97,7 @@ Begin
     IsNotFirst := False;
 
     Writeln(#10#13, FirstNum, ' | ', SecondNum);
-    While CheckPos < firstNumLength Do
+    While CheckPos < FirstNumLength Do
     Begin
         While (CheckPos < FirstNumLength) And (UnderlinedNum < SecondNum) Do
         Begin
@@ -110,48 +110,48 @@ Begin
 
         If IsNotFirst Then
         Begin
-            OutElement(' ', Pos, false, false);
+            OutElement(' ', Pos, False, False);
             OutElement('-', AddUnderlinedRange, False, True);
-            OutElement(' ', Pos, false, false);
+            OutElement(' ', Pos, False, False);
             Writeln(UnderlinedNum);
         End;
 
-        divisionAns := underlinedNum div secondNum;
-        roundDivision := divisionAns * secondNum;
-        divisionPos := pos + (addUnderlinedRange - getNumLength(roundDivision));
+        DivisionAns := UnderlinedNum Div SecondNum;
+        RoundDivision := DivisionAns * SecondNum;
+        DivisionPos := Pos + (AddUnderlinedRange - GetNumLength(RoundDivision));
 
-        outElement(' ', divisionPos, false, false);
-        write(roundDivision);
+        OutElement(' ', DivisionPos, False, False);
+        Write(RoundDivision);
 
-        if isNotFirst then
-            writeln
-        else
-        begin
-            outElement(' ', firstNumLength - addUnderlinedRange, false, false);
-            writeln(' | ', firstNum div secondNum);
-        end;
+        If IsNotFirst Then
+            Writeln
+        Else
+        Begin
+            OutElement(' ', FirstNumLength - AddUnderlinedRange, False, False);
+            Writeln(' | ', FirstNum Div SecondNum);
+        End;
 
-        dec(underlinedNum, roundDivision);
+        Dec(UnderlinedNum, RoundDivision);
 
-        newUnderlinedRange := getNumLength(underlinedNum);
-        pos := pos + addUnderlinedRange - newUnderlinedRange;
-        addUnderlinedRange := newUnderlinedRange + 1;
+        NewUnderlinedRange := GetNumLength(UnderlinedNum);
+        Pos := Pos + AddUnderlinedRange - NewUnderlinedRange;
+        AddUnderlinedRange := NewUnderlinedRange + 1;
 
-        if underlinedNum = 0 then
-        begin
-            inc(pos);
-            dec(addUnderlinedRange);
-        end;
+        If UnderlinedNum = 0 Then
+        Begin
+            Inc(Pos);
+            Dec(AddUnderlinedRange);
+        End;
 
-        IsNotFirst := true;
+        IsNotFirst := True;
         CheckPos := Pos + AddUnderlinedRange - 1;
     End;
 
-    outElement(' ', pos, false, false);
-    outElement('-', addUnderlinedRange - 1, false, true);
-    outElement(' ', pos, false, false);
+    OutElement(' ', Pos, False, False);
+    OutElement('-', AddUnderlinedRange - 1, False, True);
+    OutElement(' ', Pos, False, False);
 
-    writeln(underlinedNum, #10#13);
+    Writeln(UnderlinedNum, #10#13);
 
 End;
 

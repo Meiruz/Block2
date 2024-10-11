@@ -194,7 +194,7 @@ void exitProgram(int**&matrix, int matrixLength) {
 int main() {
 	setlocale(LC_ALL, "Russian");
 
-	cout << "Программа для определения \"седловой\" точки матрицы." << endl;
+	cout << "Программа для определения \"седловой\" точки матрицы.\n" << endl;
 
 	cout << "Все значения матрицы должны быть от " << MIN_LIMIT << " до " << MAX_LIMIT << '.' << endl;
 	cout << "Размеры матрицы MxN быть от " << MIN_LIMIT_SIZE << " до " << MAX_LIMIT_SIZE << '.' << endl << endl;
@@ -203,7 +203,7 @@ int main() {
 	int m, n;
 	int** matrix;
 
-	cout << "Введите предпочетаемый тип ввода данных:" << endl;
+	cout << "Введите предпочитаемый тип ввода данных:" << endl;
 	cout << "\t1 - из консоли (по элементу),\n\t2 - из файла (одна строка m и n, дальше элементы в виде таблицы)." << endl;
 	cinWithChecking(inType, 2, 1);
 		
@@ -212,11 +212,12 @@ int main() {
 	outMatrix(m, n, matrix);
 
 	int outType;
-	cout << "Введите предпочетаемый тип вывода данных:" << endl;
+	cout << "Введите предпочитаемый тип вывода данных:" << endl;
 	cout << "\t1 - только в консоли,\n\t2 - в консоль и в файл." << endl;
 	cinWithChecking(outType, 2, 1);
 
 	findSeddlePoints(m, n, matrix, outType);
 
 	exitProgram(matrix, m);
+	return 0;
 }
