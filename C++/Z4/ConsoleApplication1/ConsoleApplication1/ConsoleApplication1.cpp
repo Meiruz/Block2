@@ -219,10 +219,10 @@ void exitProgram(int**& matrix, int m) {
 int main() {
 	setlocale(LC_ALL, "Russian");
 
-	cout << "Программа для определения \"седловой\" точки матрицы." << endl;
+	cout << "Программа для изменения положения подматриц квадратной матрицы порядка 2n." << endl;
 
 	cout << "Все значения матрицы должны быть от " << MIN_LIMIT << " до " << MAX_LIMIT << '.' << endl;
-	cout << "Размеры матрицы MxN быть от " << MIN_LIMIT_SIZE << " до " << MAX_LIMIT_SIZE << '.' << endl << endl;
+	cout << "Размеры квадратной матрицы 2M быть от " << MIN_LIMIT_SIZE << " до " << MAX_LIMIT_SIZE << '.' << endl << endl;
 
 	int inType = 0;
 	int m, n;
