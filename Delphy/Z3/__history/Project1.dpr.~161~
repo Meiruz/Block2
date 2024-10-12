@@ -37,34 +37,38 @@ End;
 Function InWithChecking(Var InputFile: TextFile; Var Num: Integer;
     Const MAX_LIMIT_NUM, MIN_LIMIT_NUM: Integer; InType: Integer): Boolean;
 Var
-    IsFail: Boolean;
+    IsFail, isGood: Boolean;
 Begin
-    IsFail := False;
+    repeat
+        IsGood := true;
+        IsFail := False;
 
-    if EoF(InputFile) then
-    begin
-        Write(ERRORS[Ord(FailData)]);
-        Writeln('eOF');
-        IsFail := True;
-    end
-    else
-    Try
-        Read(InputFile, Num);
-    Except
-        Write(ERRORS[Ord(FailData)]);
-        IsFail := True;
-    End;
+        If EoF(InputFile) Then
+        Begin
+            Write(ERRORS[Ord(FailData)]);
+            IsFail := True;
+        End
+        Else
+        Begin
+            Try
+                Read(InputFile, Num);
+            Except
+                Write(ERRORS[Ord(FailData)]);
+                IsFail := True;
+            End;
+        End;
 
-    If Not IsFail Then
-        IsFail := CheckNumForLimitError(Num, MAX_LIMIT_NUM, MIN_LIMIT_NUM);
+        If Not IsFail Then
+            IsFail := CheckNumForLimitError(Num, MAX_LIMIT_NUM, MIN_LIMIT_NUM);
 
-    If (IsFail) And (InType = 1) Then
-        InWithChecking(InputFile, Num, MAX_LIMIT, MIN_LIMIT, InType);
+        If (IsFail) And (InType = 1) Then
+            IsGood := False;
 
-    If IsFail Then
-        InWithChecking := False
-    Else
-        InWithChecking := True;
+        If IsFail Then
+            InWithChecking := True
+        Else
+            InWithChecking := False;
+    Until IsGood;
 End;
 
 Procedure StrToLow(Var Str: String);
@@ -171,15 +175,17 @@ Function InDataWithFile(Var InputFile: TextFile; Var M, N: Integer;
     Var Matrix: TMatrix): Boolean;
 Var
     I, J: Integer;
+    IsNotEnd: Boolean;
 Begin
+    IsNotEnd := True;
     OpenFile(InputFile, FileIn);
 
-    If Not InWithChecking(InputFile, N, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE, 2) Then
+    If InWithChecking(InputFile, N, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE, 2) Then
     Begin
         InDataWithFile := False;
     End;
 
-    If Not InWithChecking(InputFile, M, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE, 2) Then
+    If InWithChecking(InputFile, M, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE, 2) Then
     Begin
         InDataWithFile := False;
     End;
@@ -189,14 +195,17 @@ Begin
     Begin
         SetLength(Matrix[I], N);
         For J := 0 To High(Matrix[I]) Do
-            If Not InWithChecking(InputFile, Matrix[I][J], MAX_LIMIT,
-                MIN_LIMIT, 2) Then
+            If (IsNotEnd) And
+                (InWithChecking(InputFile, Matrix[I][J], MAX_LIMIT,
+                MIN_LIMIT, 2)) Then
             Begin
                 InDataWithFile := False;
+                IsNotEnd := False;
             End;
     End;
 
-    InDataWithFile := True;
+    If IsNotEnd Then
+        InDataWithFile := True;
     Close(InputFile);
 End;
 
@@ -298,7 +307,7 @@ Begin
     Writeln('Размеры матрицы MxN быть от ', MIN_LIMIT_SIZE, ' до ',
         MAX_LIMIT_SIZE, '.');
 
-    Writeln('Введите предпочетаемый тип ввода данных: ');
+    Writeln('Введите предпочитаемый тип ввода данных: ');
     Writeln(#9, '1 - из консоли (по элементу),', #10#13#9,
         '2 - из файла (одна строка m и n, дальше элементы в виде таблицы).');
 
@@ -310,7 +319,7 @@ Begin
 
     OutMatrix(Matrix);
 
-    Writeln('Введите предпочетаемый тип вывода данных: ');
+    Writeln('Введите предпочитаемый тип вывода данных: ');
     Writeln(#9, '1 - только в консоли,', #10#13#9, '2 - в консоль и в файл.');
 
     InWithChecking(ConsoleFile, OutType, 2, 1, 1);
