@@ -21,21 +21,22 @@ Procedure InWithChecking(Var Value: Integer);
 Var
     IsGood: Boolean;
 Begin
-    IsGood := True;
+    Repeat
+        IsGood := True;
 
-    Try
-        Readln(Value);
-    Except
-        IsGood := False;
-        Write(ERRORS[Ord(FailData)]);
-        InWithChecking(Value);
-    End;
+        Try
+            Readln(Value);
+        Except
+            IsGood := False;
+            Write(ERRORS[Ord(FailData)]);
+        End;
 
-    If IsGood And ((Value > MAX_LIMIT) Or (Value < MIN_LIMIT)) Then
-    Begin
-        Write(ERRORS[Ord(FailLimitOfData)]);
-        InWithChecking(Value);
-    End;
+        If IsGood And ((Value > MAX_LIMIT) Or (Value < MIN_LIMIT)) Then
+        Begin
+            IsGood := false;
+            Write(ERRORS[Ord(FailLimitOfData)]);
+        End;
+    Until IsGood;
 End;
 
 Function GetNumLength(Num: Integer): Integer;
@@ -106,7 +107,6 @@ Begin
             Inc(CheckPos);
         End;
         Dec(AddUnderlinedRange);
-        Dec(CheckPos);
 
         If IsNotFirst Then
         Begin

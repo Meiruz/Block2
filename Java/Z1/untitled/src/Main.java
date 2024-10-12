@@ -23,6 +23,7 @@ public class Main {
         System.out.println("Программа для определения, является ли многоугольник выпуклым или нет?");
 
         int countOfPoints = 0;
+        int i;
         boolean isFail;
         Scanner sc = new Scanner(System.in);
 
@@ -49,7 +50,7 @@ public class Main {
         int[] pointY = new int[countOfPoints];
 
         System.out.println("\nВведите точки вершин многоугольника последовательно.");
-        for (int i = 0; i < countOfPoints; i++) {
+        for (i = 0; i < countOfPoints; i++) {
             do {
                 isFail = false;
 
@@ -82,7 +83,7 @@ public class Main {
         int sign = -2;
         boolean isEndOfFor = false;
 
-        for (int i = 0; i < countOfPoints; i++) {
+        for (i = 0; i < countOfPoints; i++) {
             int secondIndex = (i + 1) % countOfPoints;
             int thirdIndex = (i + 2) % countOfPoints;
 

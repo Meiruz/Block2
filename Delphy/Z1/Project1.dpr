@@ -52,7 +52,7 @@ Begin
     SetLength(PointX, CountOfPoints);
     SetLength(PointY, CountOfPoints);
 
-    For I := 0 To High(PointX) Do
+
     Begin
         Write('¬ведите координаты вершины (x, y) от ', MIN_LIMIT, ' до ',
             MAX_LIMIT, ' #', I + 1, ': ');
@@ -74,13 +74,10 @@ Begin
                 IsFail := True;
             End;
         Until Not IsFail;
-
-        Inc(PointX[I], MAX_LIMIT);
-        Inc(PointY[I], MAX_LIMIT);
     End;
 
-    Sign := -2;
     IsEndOfFor := False;
+    Sign := -2;
 
     For I := 0 To High(PointX) Do
     Begin
@@ -98,10 +95,7 @@ Begin
         If VectorSum = 0 Then
             SignOfVectorSum := 0
         Else
-            If VectorSum > 0 Then
-                SignOfVectorSum := 1
-            Else
-                SignOfVectorSum := -1;
+            SignOfVectorSum := VectorSum Div Abs(VectorSum);
 
         If SignOfVectorSum <> 0 Then
             If Sign = -2 Then

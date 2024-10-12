@@ -37,36 +37,40 @@ End;
 Function InWithChecking(Var InputFile: TextFile; Var Num: Integer;
     Const MAX_LIMIT_NUM, MIN_LIMIT_NUM: Integer; InType: Integer): Boolean;
 Var
-    IsFail: Boolean;
+    IsFail, isGood: Boolean;
 Begin
-    IsFail := False;
+    repeat
+        IsGood := true;
+        IsFail := False;
 
-    If EoF(InputFile) Then
-    Begin
-        Write(ERRORS[Ord(FailData)]);
-        IsFail := True;
-    End
-    Else
-    Begin
-        Try
-            Read(InputFile, Num);
-        Except
+        If EoF(InputFile) Then
+        Begin
             Write(ERRORS[Ord(FailData)]);
             IsFail := True;
+        End
+        Else
+        Begin
+            Try
+                Read(InputFile, Num);
+            Except
+                Write(ERRORS[Ord(FailData)]);
+                IsFail := True;
+            End;
         End;
-    End;
 
-    If Not IsFail Then
-        IsFail := CheckNumForLimitError(Num, MAX_LIMIT_NUM, MIN_LIMIT_NUM);
+        If Not IsFail Then
+            IsFail := CheckNumForLimitError(Num, MAX_LIMIT_NUM, MIN_LIMIT_NUM);
 
-    If (IsFail) And (InType = 1) Then
-        InWithChecking(InputFile, Num, MAX_LIMIT, MIN_LIMIT, InType);
+        If (IsFail) And (InType = 1) Then
+            isGood := false;
 
-    If IsFail Then
-        InWithChecking := True
-    Else
-        InWithChecking := False;
+        If IsFail Then
+            InWithChecking := True
+        Else
+            InWithChecking := False;
+    until IsGood;
 End;
+
 
 Procedure StrToLow(Var Str: String);
 Var
@@ -107,37 +111,37 @@ Var
     PathToFile: String;
     IsOk: Boolean;
 Begin
-    IsOk := True;
+    repeat
+        IsOk := True;
 
-    If FileType = FileIn Then
-        Writeln(#10#13, '¬ведите путь к файлу .txt дл€ ввода данных: ')
-    Else
-        Writeln(#10#13, '¬ведите путь к файлу .txt дл€ вывода данных: ');
-    Readln(PathToFile);
+        If FileType = FileIn Then
+            Writeln(#10#13, '¬ведите путь к файлу .txt дл€ ввода данных: ')
+        Else
+            Writeln(#10#13, '¬ведите путь к файлу .txt дл€ вывода данных: ');
+        Readln(PathToFile);
 
-    If CheckFileNotTxt(PathToFile) Then
-    Begin
-        Writeln(ERRORS[Ord(NotTXTFile)]);
-        IsOk := False;
-        OpenFile(OpendFile, FileType);
-    End;
-
-    If IsOk Then
-        Try
-            AssignFile(OpendFile, PathToFile);
-            If FileType = FileIn Then
-                Reset(OpendFile)
-            Else
-                Rewrite(OpendFile);
-        Except
-            If FileType = FileIn Then
-                Writeln(ERRORS[Ord(FailFileOpen)])
-            Else
-                Writeln(ERRORS[Ord(FailFileCreateOrOpen)]);
-
+        If CheckFileNotTxt(PathToFile) Then
+        Begin
+            Writeln(ERRORS[Ord(NotTXTFile)]);
             IsOk := False;
-            OpenFile(OpendFile, FileType);
         End;
+
+        If IsOk Then
+            Try
+                AssignFile(OpendFile, PathToFile);
+                If FileType = FileIn Then
+                    Reset(OpendFile)
+                Else
+                    Rewrite(OpendFile);
+            Except
+                If FileType = FileIn Then
+                    Writeln(ERRORS[Ord(FailFileOpen)])
+                Else
+                    Writeln(ERRORS[Ord(FailFileCreateOrOpen)]);
+
+                IsOk := False;
+            End;
+    until isOk;
 End;
 
 Procedure InDataWithConsole(Var InputFile: TextFile; Var M, N: Integer;

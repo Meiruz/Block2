@@ -22,6 +22,7 @@ int main() {
 
 	bool isFail;
 	int countOfPoints = 0;
+	int i = 0;
 
 	cout << "\nВведите количество вершин многоугольника от " << 3 << " до " << MAX_LIMIT << ":";
 	do {
@@ -47,7 +48,7 @@ int main() {
 	int* pointY = new int[countOfPoints];
 
 	cout << "\nВведите точки вершин многоугольника последовательно." << endl;
-	for (int i = 0; i < countOfPoints; i++) {
+	for (i = 0; i < countOfPoints; i++) {
 		cout << "Введите координаты вершины (x, y) от " << MIN_LIMIT << " до " << MAX_LIMIT << " #" << i + 1 << ':';
 		do {
 			isFail = false;
@@ -75,7 +76,7 @@ int main() {
 	int sign = -2;
 	bool isEndOfFor = false;
 
-	for (int i = 0; i < countOfPoints; i++) {
+	for (i = 0; i < countOfPoints; i++) {
 		int secondIndex = (i + 1) % countOfPoints;
 		int thirdIndex = (i + 2) % countOfPoints;
 

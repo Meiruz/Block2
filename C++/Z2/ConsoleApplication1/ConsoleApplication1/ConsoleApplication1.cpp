@@ -23,25 +23,31 @@ void splitNumToArray(int num, int* arr, int numLength) {
 }
 
 void cinWithChecking(int& value, const int& MAX_LIMIT, const int& MIN_LIMIT) {
-	cin >> value;
+	bool isFail;
 
-	if (cin.fail() || cin.get() != '\n') {
-		cout << ERRORS[FailData] << endl;
-		cinBufClean();
-		cinWithChecking(value, MAX_LIMIT, MIN_LIMIT);
-	}
-	else if (value > MAX_LIMIT || value < MIN_LIMIT) {
-		cout << ERRORS[FailLimitOfData] << endl;
-		cinWithChecking(value, MAX_LIMIT, MIN_LIMIT);
-	}
+	do {
+		isFail = false;
+		cin >> value;
 
+		if (cin.fail() || cin.get() != '\n') {
+			cout << ERRORS[FailData] << endl;
+			cinBufClean();
+			isFail = true;
+		}
+		else if (value > MAX_LIMIT || value < MIN_LIMIT) {
+			cout << ERRORS[FailLimitOfData] << endl;
+			isFail = true;
+		}
+	} while (isFail);
 }
 
 void outElement(char element, int count, bool isStartEndl = false, bool isEndEndl = false) {
+	int i;
+
 	if (isStartEndl) 
 		cout << endl;
 
-	for (int i = 0; i < count; i++) 
+	for (i = 0; i < count; i++) 
 		cout << element;
 
 	if (isEndEndl) 

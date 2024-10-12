@@ -54,19 +54,23 @@ bool checkFileNotTxt(string pathToFile) {
 	return true;
 }
 
-void cinWithChecking(int& num, const int MAX_LIMIT_NUM, const int MIN_LIMIT_NUM) {
-	cin >> num;
+void cinWithChecking(int& value, const int& MAX_LIMIT, const int& MIN_LIMIT) {
+	bool isFail;
 
-	if (cin.fail() || cin.get() != '\n') {
-		cout << ERRORS[FailData] << endl;
-		cinBufClean();
-		cinWithChecking(num, MAX_LIMIT_NUM, MIN_LIMIT_NUM);
-	}
-	else if (num > MAX_LIMIT_NUM || num < MIN_LIMIT_NUM) {
-		cout << ERRORS[FailLimitOfData] << endl;
-		cinWithChecking(num, MAX_LIMIT_NUM, MIN_LIMIT_NUM);
-	}
+	do {
+		isFail = false;
+		cin >> value;
 
+		if (cin.fail() || cin.get() != '\n') {
+			cout << ERRORS[FailData] << endl;
+			cinBufClean();
+			isFail = true;
+		}
+		else if (value > MAX_LIMIT || value < MIN_LIMIT) {
+			cout << ERRORS[FailLimitOfData] << endl;
+			isFail = true;
+		}
+	} while (isFail);
 }
 
 bool finWithChecking(fstream& fin, int& num, const int MAX_LIMIT_NUM, const int MIN_LIMIT_NUM) {
@@ -86,25 +90,33 @@ bool finWithChecking(fstream& fin, int& num, const int MAX_LIMIT_NUM, const int 
 }
 
 void openFile(fstream& file, TFile fileType) {
-	cout << "\nВведите путь к файлу .txt для " << (fileType == FileIn ? "ввода" : "вывода") << " данных : " << endl;
-	string filename;
-	cin >> filename;
+	bool isFail;
 
-	if (checkFileNotTxt(filename)) {
-		cout << ERRORS[NotTXTFile];
-		openFile(file, fileType);
-	}
-	else {
-		file.open(filename, fileType == FileIn ? ios::in : ios::out);
-		if (!file.is_open()) {
-			cout << ERRORS[FailFileOpen];
-			file.close();
-			openFile(file, fileType);
+	do {
+		isFail = false;
+
+		cout << "\nВведите путь к файлу .txt для " << (fileType == FileIn ? "ввода" : "вывода") << " данных : " << endl;
+		string filename;
+		cin >> filename;
+
+		if (checkFileNotTxt(filename)) {
+			cout << ERRORS[NotTXTFile];
+			isFail = true;
 		}
-	}
+		else {
+			file.open(filename, fileType == FileIn ? ios::in : ios::out);
+			if (!file.is_open()) {
+				cout << ERRORS[FailFileOpen];
+				file.close();
+				isFail = true;
+			}
+		}
+	} while (isFail);
 }
 
 void inDataWithConsole(int& m, int& n, int**& matrix) {
+	int i, j;
+
 	cout << "Введите размерность 2M квадратной матрицы: " << endl;
 	cinWithChecking(m, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE);
 
@@ -112,9 +124,9 @@ void inDataWithConsole(int& m, int& n, int**& matrix) {
 	n = m;
 
 	matrix = new int* [m];
-	for (int i = 0; i < m; i++) {
+	for (i = 0; i < m; i++) {
 		matrix[i] = new int[n];
-		for (int j = 0; j < n; j++) {
+		for (j = 0; j < n; j++) {
 			cout << "Введите элемент матрицы [" << i + 1 << ',' << j + 1 << "]:" << endl;
 			cinWithChecking(matrix[i][j], MAX_LIMIT, MIN_LIMIT);
 		}
@@ -122,6 +134,8 @@ void inDataWithConsole(int& m, int& n, int**& matrix) {
 }
 
 bool inDataWithFile(int& m, int& n, int**& matrix, fstream& fin) {
+	int i, j;
+
 	openFile(fin, FileIn);
 
 	if (finWithChecking(fin, m, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE))
@@ -131,9 +145,9 @@ bool inDataWithFile(int& m, int& n, int**& matrix, fstream& fin) {
 	n = m;
 
 	matrix = new int*[m];
-	for (int i = 0; i < m; i++) {
+	for (i = 0; i < m; i++) {
 		matrix[i] = new int[n];
-		for (int j = 0; j < n; j++)
+		for (j = 0; j < n; j++)
 			if (finWithChecking(fin, matrix[i][j], MAX_LIMIT, MIN_LIMIT)) {
 				fin.close();
 				return true;
@@ -158,14 +172,16 @@ void inData(int& m, int& n, int**& matrix, int inType) {
 }
 
 void outMatrix(int m, int n, int**& arr, int outType) {
+	int i, j;
+
 	fstream fout;
 	if (outType == 2)
 		openFile(fout, FileOut);
 
 	cout << endl;
 
-	for (int i = 0; i < m; i++) {
-		for (int j = 0; j < n; j++) {
+	for (i = 0; i < m; i++) {
+		for (j = 0; j < n; j++) {
 			cout << arr[i][j] << ' ';
 			if (outType == 2)
 				fout << arr[i][j] << ' ';
@@ -181,12 +197,14 @@ void outMatrix(int m, int n, int**& arr, int outType) {
 }
 
 void changeMatrix(int**& matrix, int m, int n) {
+	int i, j;
 	int** newMatrix = new int* [m];
-	for (int i = 0; i < m; i++)
+
+	for (i = 0; i < m; i++)
 		newMatrix[i] = new int[n] {0};
 
-	for (int i = 0; i < m; i++)
-		for (int j = 0; j < n; j++)
+	for (i = 0; i < m; i++)
+		for (j = 0; j < n; j++)
 			if (i < n / 2)
 				if (j < n / 2)
 					newMatrix[i + n / 2][j + n / 2] = matrix[i][j];
@@ -198,17 +216,18 @@ void changeMatrix(int**& matrix, int m, int n) {
 				else
 					newMatrix[i - n / 2][j] = matrix[i][j];
 
-	for (int i = 0; i < m; i++)
-		for (int j = 0; j < n; j++)
+	for (i = 0; i < m; i++)
+		for (j = 0; j < n; j++)
 			matrix[i][j] = newMatrix[i][j];
 
-	for (int i = 0; i < m; i++)
+	for (i = 0; i < m; i++)
 		delete[] newMatrix[i];
 	delete[] newMatrix;
 }
 
 void exitProgram(int**& matrix, int m) {
-	for (int i = 0; i < m; i++)
+	int i;
+	for (i = 0; i < m; i++)
 		delete[] matrix[i];
 	delete[] matrix;
 

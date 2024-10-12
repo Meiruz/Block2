@@ -11,13 +11,15 @@ enum TErrors {
 	FailFileOpen = 0,
 	FailFileCreateOrOpen,
 	FailData,
-	FailLimitOfData
+	FailLimitOfData,
+	NotTXTFile
 };
-const string ERRORS[4]{
+const string ERRORS[5]{
 	"Неудалось открыть файл. Попробуйте еще раз, проверив путь и имя файла.",
 	"Неудалось открыть или создать файл. Попробуйте еще раз, проверив путь и имя файла.",
 	"Некорректные данные данные. Попробуйте еще раз.",
-	"Ваше значение не соответствует числовым ограничениям. Попробуйте еще раз."
+	"Ваше значение не соответствует числовым ограничениям. Попробуйте еще раз.",
+	"Расширение файла должно быть TXT. Попробуйте еще раз."
 };
 const int MIN_LIMIT_SIZE = 0;
 const int MAX_LIMIT_SIZE = 100;
@@ -29,19 +31,47 @@ void cinBufClean() {
 	while (cin.get() != '\n');
 }
 
-void cinWithChecking(int &num, const int MAX_LIMIT_NUM, const int MIN_LIMIT_NUM) {
-	cin >> num;
-
-	if (cin.fail() || cin.get() != '\n') {
-		cout << ERRORS[FailData] << endl;
-		cinBufClean();
-		cinWithChecking(num, MAX_LIMIT_NUM, MIN_LIMIT_NUM);
+void strToLow(string& str) {
+	for (char& sym : str) {
+		int asciiValue = (int)sym;
+		if (asciiValue > 64 && asciiValue < 91)
+			sym = (char)(asciiValue + 32);
 	}
-	else if (num > MAX_LIMIT_NUM || num < MIN_LIMIT_NUM) {
-		cout << ERRORS[FailLimitOfData] << endl;
-		cinWithChecking(num, MAX_LIMIT_NUM, MIN_LIMIT_NUM);
-	}
+}
 
+bool checkFileNotTxt(string pathToFile) {
+	strToLow(pathToFile);
+
+	int stringLength = pathToFile.length();
+
+	if (stringLength < 4)
+		return true;
+	if ((pathToFile[stringLength - 1] == 't') &&
+		(pathToFile[stringLength - 2] == 'x') &&
+		(pathToFile[stringLength - 3] == 't') &&
+		(pathToFile[stringLength - 4] == '.'))
+		return false;
+	return true;
+}
+
+
+void cinWithChecking(int& value, const int& MAX_LIMIT, const int& MIN_LIMIT) {
+	bool isFail;
+
+	do {
+		isFail = false;
+		cin >> value;
+
+		if (cin.fail() || cin.get() != '\n') {
+			cout << ERRORS[FailData] << endl;
+			cinBufClean();
+			isFail = true;
+		}
+		else if (value > MAX_LIMIT || value < MIN_LIMIT) {
+			cout << ERRORS[FailLimitOfData] << endl;
+			isFail = true;
+		}
+	} while (isFail);
 }
 
 bool finWithChecking(fstream &fin, int& num, const int MAX_LIMIT_NUM, const int MIN_LIMIT_NUM) {
@@ -60,20 +90,35 @@ bool finWithChecking(fstream &fin, int& num, const int MAX_LIMIT_NUM, const int 
 	return false;
 }
 
-void openFile(fstream &file, TFile fileType) {
-	cout << "\nВведите путь к файлу .txt для " << (fileType == FileIn ? "ввода" : "вывода") << " данных : " << endl;
-	string filename;
-	cin >> filename;
+void openFile(fstream& file, TFile fileType) {
+	bool isFail;
 
-	file.open(filename, fileType == FileIn ? ios::in : ios::out);
-	if (!file.is_open()) {
-		cout << ERRORS[FailFileOpen];
-		file.close();
-		openFile(file, fileType);
-	}
+	do {
+		isFail = false;
+
+		cout << "\nВведите путь к файлу .txt для " << (fileType == FileIn ? "ввода" : "вывода") << " данных : " << endl;
+		string filename;
+		cin >> filename;
+
+		if (checkFileNotTxt(filename)) {
+			cout << ERRORS[NotTXTFile];
+			isFail = true;
+		}
+		else {
+			file.open(filename, fileType == FileIn ? ios::in : ios::out);
+			if (!file.is_open()) {
+				cout << ERRORS[FailFileOpen];
+				file.close();
+				isFail = true;
+			}
+		}
+	} while (isFail);
 }
 
+
 void inDataWithConsole(int &m, int &n, int **&matrix) {
+	int i, j;
+
 	cout << "Введите колчество строк M матрицы: " << endl;
 	cinWithChecking(m, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE);
 
@@ -81,9 +126,9 @@ void inDataWithConsole(int &m, int &n, int **&matrix) {
 	cinWithChecking(n, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE);
 
 	matrix = new int*[m];
-	for (int i = 0; i < m; i++) {
+	for (i = 0; i < m; i++) {
 		matrix[i] = new int[n];
-		for (int j = 0; j < n; j++) {
+		for (j = 0; j < n; j++) {
 			cout << "Введите элемент матрицы [" << i + 1 << ',' << j + 1 << "]:" << endl;
 			cinWithChecking(matrix[i][j], MAX_LIMIT, MIN_LIMIT);
 		}
@@ -91,7 +136,8 @@ void inDataWithConsole(int &m, int &n, int **&matrix) {
 }
 
 bool inDataWithFile(int& m, int& n, int**& matrix, fstream &fin) {
-	
+	int i, j;
+
 	openFile(fin, FileIn);
 	
 	if (finWithChecking(fin, m, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE))
@@ -100,10 +146,9 @@ bool inDataWithFile(int& m, int& n, int**& matrix, fstream &fin) {
 		return true;
 
 	matrix = new int* [m];
-	for (int i = 0; i < m; i++) {
-		cout << i << endl;
+	for (i = 0; i < m; i++) {
 		matrix[i] = new int[n];
-		for (int j = 0; j < n; j++) 
+		for (j = 0; j < n; j++) 
 			if (finWithChecking(fin, matrix[i][j], MAX_LIMIT, MIN_LIMIT))
 				return true;
 	}
@@ -127,6 +172,7 @@ void inData(int& m, int& n, int**& matrix, int inType) {
 
 void findSeddlePoints(int m, int n, int**&matrix, int outType) {
 	fstream fout;
+	int i, j;
 
 	if (outType == 2) 
 		openFile(fout, FileOut);
@@ -134,11 +180,11 @@ void findSeddlePoints(int m, int n, int**&matrix, int outType) {
 	int* minRows = new int[m];
 	int* maxColumns = new int[n] {0};
 
-	for (int i = 0; i < m; i++)
+	for (i = 0; i < m; i++)
 		minRows[i] = 101;
 
-	for (int i = 0; i < m; i++)
-		for (int j = 0; j < n; j++) {
+	for (i = 0; i < m; i++)
+		for (j = 0; j < n; j++) {
 			if (matrix[i][j] < minRows[i])
 				minRows[i] = matrix[i][j];
 			if (matrix[i][j] > maxColumns[j])
@@ -147,8 +193,8 @@ void findSeddlePoints(int m, int n, int**&matrix, int outType) {
 
 	int countOfAnswers = 0;
 	cout << endl;
-	for (int i = 0; i < m; i++)
-		for (int j = 0; j < n; j++)
+	for (i = 0; i < m; i++)
+		for (j = 0; j < n; j++)
 			if (minRows[i] == maxColumns[j]) {
 				countOfAnswers++;
 				cout << minRows[i] << " - [" << i + 1 << ',' << j + 1 << ']' << endl;
@@ -171,10 +217,12 @@ void findSeddlePoints(int m, int n, int**&matrix, int outType) {
 }
 
 void outMatrix(int m, int n, int**&arr) {
+	int i, j;
+
 	cout << endl;
 
-	for (int i = 0; i < m; i++) {
-		for (int j = 0; j < n; j++)
+	for (i = 0; i < m; i++) {
+		for (j = 0; j < n; j++)
 			cout << arr[i][j] << ' ';
 		cout << endl;
 	}
@@ -183,7 +231,8 @@ void outMatrix(int m, int n, int**&arr) {
 }
 
 void exitProgram(int**&matrix, int matrixLength) {
-	for (int i = 0; i < matrixLength; i++)
+	int i;
+	for (i = 0; i < matrixLength; i++)
 		delete[] matrix[i];
 	delete[] matrix;
 

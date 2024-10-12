@@ -43,53 +43,60 @@ public class Main {
     }
 
     static int cinWithChecking(Scanner input, final int MAX_LIMIT, final int MIN_LIMIT) {
-        int value;
-        try {
-            value = Integer.parseInt(input.nextLine());
-        } catch (NumberFormatException e) {
-            System.out.println(TErrors.FailData.text);
-            return cinWithChecking(input, MAX_LIMIT, MIN_LIMIT);
-        }
+        int value = 0;
+        boolean isFail;
 
-        if (value > MAX_LIMIT || value < MIN_LIMIT) {
-            System.out.println(TErrors.FailLimitOfData.text);
-            return cinWithChecking(input, MAX_LIMIT, MIN_LIMIT);
-        }
-        return value;
+        do {
+            isFail = false;
+            try {
+                value = Integer.parseInt(input.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println(TErrors.FailData.text);
+                isFail = true;
+            }
+
+            if (value > MAX_LIMIT || value < MIN_LIMIT) {
+                System.out.println(TErrors.FailLimitOfData.text);
+                isFail = true;
+            }
+            return value;
+        } while (isFail);
     }
 
-    static int finWithChecking(Scanner scannerFileInput, final int MAX_LIMIT, final int MIN_LIMIT, IntNum status) {
+    static int finWithChecking(Scanner scannerFileInput, final int MAX_LIMIT, final int MIN_LIMIT, int[] status) {
         int value = 0;
 
         try {
             value = scannerFileInput.nextInt();
         } catch (NumberFormatException e) {
             System.out.println(TErrors.FailData.text);
-            status.value = 1;
+            status[0] = 1;
         } catch (NoSuchElementException e) {
             System.out.println(TErrors.FailData.text);
-            status.value = 1;
+            status[0] = 1;
         }
 
-        if ((status.value == 0) && (value > MAX_LIMIT || value < MIN_LIMIT)) {
+        if ((status[0] == 0) && (value > MAX_LIMIT || value < MIN_LIMIT)) {
             System.out.println(TErrors.FailLimitOfData.text);
-            status.value = 1;
+            status[0] = 1;
         }
 
         return value;
     }
 
-    static int[][] inMatrixWithConsole(Scanner input, IntNum m, IntNum n) {
+    static int[][] inMatrixWithConsole(Scanner input, int[] m, int[] n) {
+        int i, j;
+
         System.out.println("Введите размерность 2M квадратной матрицы: ");
-        m.value = cinWithChecking(input, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE);
+        m[0] = cinWithChecking(input, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE);
 
-        m.value *= 2;
-        n.value = m.value;
+        m[0] *= 2;
+        n[0] = m[0];
 
-        int[][] matrix = new int[m.value][n.value];
+        int[][] matrix = new int[m[0]][n[0]];
 
-        for (int i = 0; i < m.value; i++)
-            for (int j = 0; j < n.value; j++) {
+        for (i = 0; i < m[0]; i++)
+            for (j = 0; j < n[0]; j++) {
                 System.out.printf("Введите элемент матрицы [%s, %s]:", i + 1, j + 1);
                 matrix[i][j] = cinWithChecking(input, MAX_LIMIT, MIN_LIMIT);
             }
@@ -98,53 +105,61 @@ public class Main {
     }
 
     static String getFileName(Scanner sc, TFile fileType) {
-        System.out.printf("\nВведите путь к файлу .txt для %s данных: ", (fileType == TFile.FileIn ? "ввода" : "вывода"));
-        String pathToFile;
+        String pathAns = "";
+        boolean isFail;
 
-        pathToFile = sc.nextLine();
+        do {
+            isFail = false;
 
-        if (checkFileNotTxt(pathToFile)) {
-            System.out.println(TErrors.NotTXTFile.text);
-            return getFileName(sc, fileType);
-        }
+            System.out.printf("\nВведите путь к файлу .txt для %s данных: ", (fileType == TFile.FileIn ? "ввода" : "вывода"));
+            String pathToFile;
 
-        File file = new File(pathToFile);
-        if (!file.exists())
-            if (fileType == TFile.FileOut) {
-                try {
-                    file.createNewFile();
-                }
-                catch(IOException ex){
-                    System.out.println(TErrors.FailFileOpen.text);
-                    return getFileName(sc, fileType);
-                }
-            } else {
-                System.out.println(TErrors.FailFileOpen.text);
-                return getFileName(sc, fileType);
+            pathToFile = sc.nextLine();
+
+            if (checkFileNotTxt(pathToFile)) {
+                System.out.println(TErrors.NotTXTFile.text);
+                isFail = true;
             }
-        return file.getAbsolutePath();
+
+            File file = new File(pathToFile);
+            if (!file.exists())
+                if (fileType == TFile.FileOut) {
+                    try {
+                        file.createNewFile();
+                    } catch (IOException ex) {
+                        System.out.println(TErrors.FailFileOpen.text);
+                        isFail = true;
+                    }
+                } else {
+                    System.out.println(TErrors.FailFileOpen.text);
+                    isFail = true;
+                }
+            pathAns = file.getAbsolutePath();;
+        } while (isFail);
+        return pathAns;
     }
 
-    static int[][] inMatrixWithFile(Scanner input, IntNum m, IntNum n, IntNum isFileError) {
+    static int[][] inMatrixWithFile(Scanner input, int[] m, int[] n, int[] isFileError) {
+        int i, j;
         String pathToFile = getFileName(input, TFile.FileIn);
 
         Scanner scannerFileInput = null;
         try {
             scannerFileInput = new Scanner(new File(pathToFile));
         } catch (FileNotFoundException e) {
-            isFileError.value = 1;
+            isFileError[0] = 1;
             System.out.println(TErrors.FailFileOpen.text);
         }
 
-        m.value = finWithChecking(scannerFileInput, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE, isFileError);
-        m.value *= 2;
-        n.value = m.value;
+        m[0] = finWithChecking(scannerFileInput, MAX_LIMIT_SIZE, MIN_LIMIT_SIZE, isFileError);
+        m[0] *= 2;
+        n[0] = m[0];
 
-        int[][] matrix = new int[m.value][n.value];
+        int[][] matrix = new int[m[0]][n[0]];
 
-        for (int i = 0; i < m.value; i++)
-            for (int j = 0; j < n.value; j++) {
-                if (isFileError.value == 0)
+        for (i = 0; i < m[0]; i++)
+            for (j = 0; j < n[0]; j++) {
+                if (isFileError[0] == 0)
                     matrix[i][j] = finWithChecking(scannerFileInput, MAX_LIMIT, MIN_LIMIT, isFileError);
             }
 
@@ -153,8 +168,9 @@ public class Main {
         return matrix;
     }
 
-    static int[][] inMatrixWithSize(Scanner input, IntNum m, IntNum n, int inType) {
-        IntNum isFileError = new IntNum(0);
+    static int[][] inMatrixWithSize(Scanner input, int[] m, int[] n, int inType) {
+        int i, j;
+        int[] isFileError = {0};
         int[][] matrix;
 
         if (inType == 1)
@@ -162,24 +178,27 @@ public class Main {
         else
             do {
                 matrix = inMatrixWithFile(input, m, n, isFileError);
-            } while (isFileError.value == 1);
+            } while (isFileError[0] == 1);
 
         return matrix;
     }
 
-    static void outMatrixToConsole(int[][] matrix, IntNum n, IntNum m) {
-        for (int i = 0; i < m.value; i++) {
-            for (int j = 0; j < n.value; j++)
+    static void outMatrixToConsole(int[][] matrix, int[] n, int[] m) {
+        int i, j;
+        System.out.println();
+        for (i = 0; i < m[0]; i++) {
+            for (j = 0; j < n[0]; j++)
                 System.out.print(matrix[i][j] + " ");
             System.out.println();
         }
     }
 
-    static void outMatrixToFile(Scanner input, int[][] matrix, IntNum n, IntNum m) {
+    static void outMatrixToFile(Scanner input, int[][] matrix, int[] n, int[] m) {
+        int i, j;
         String pathToFile = getFileName(input, TFile.FileOut);
         try (FileWriter writer = new FileWriter(pathToFile, false)) {
-            for (int i = 0; i < m.value; i++) {
-                for (int j = 0; j < n.value; j++)
+            for (i = 0; i < m[0]; i++) {
+                for (j = 0; j < n[0]; j++)
                     writer.append(matrix[i][j] + " ");
                 writer.append('\n');
             }
@@ -189,31 +208,32 @@ public class Main {
         }
     }
 
-    static void changeMatrix(int[][] matrix, IntNum m, IntNum n) {
-        int[][] newMatrix = new int[m.value][n.value];
+    static void changeMatrix(int[][] matrix, int[] m, int[] n) {
+        int i, j;
+        int[][] newMatrix = new int[m[0]][n[0]];
 
-        for (int i = 0; i < m.value; i++)
-            for (int j = 0; j < n.value; j++)
-                if (i < n.value / 2)
-                    if (j < n.value / 2)
-                        newMatrix[i + n.value / 2][j + n.value / 2] = matrix[i][j];
+        for (i = 0; i < m[0]; i++)
+            for (j = 0; j < n[0]; j++)
+                if (i < n[0] / 2)
+                    if (j < n[0] / 2)
+                        newMatrix[i + n[0] / 2][j + n[0] / 2] = matrix[i][j];
                     else
-                        newMatrix[i + n.value / 2][j - n.value / 2] = matrix[i][j];
+                        newMatrix[i + n[0] / 2][j - n[0] / 2] = matrix[i][j];
                 else
-                if (j < n.value / 2)
-                    newMatrix[i - n.value / 2][j] = matrix[i][j];
+                if (j < n[0] / 2)
+                    newMatrix[i - n[0] / 2][j] = matrix[i][j];
                 else
-                    newMatrix[i - n.value / 2][j] = matrix[i][j];
+                    newMatrix[i - n[0] / 2][j] = matrix[i][j];
 
-        for (int i = 0; i < m.value; i++)
-            for (int j = 0; j < n.value; j++)
+        for (i = 0; i < m[0]; i++)
+            for (j = 0; j < n[0]; j++)
                 matrix[i][j] = newMatrix[i][j];
     }
 
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
-        IntNum n = new IntNum(0);
-        IntNum m = new IntNum(0);
+        int[] n = {0};
+        int[] m = {0};
 
         System.out.println("Программа для изменения положения подматриц квадратной матрицы порядка 2n.\n");
 
@@ -239,13 +259,5 @@ public class Main {
         outMatrixToConsole(matrix, m, n);
 
         input.close();
-    }
-
-    static class IntNum {
-        int value;
-
-        IntNum(int value) {
-            this.value = value;
-        }
     }
 }

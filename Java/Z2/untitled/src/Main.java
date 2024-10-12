@@ -20,27 +20,35 @@ public class Main {
     }
 
     static int cinWithChecking(Scanner sc, final int MAX_LIMIT, final int MIN_LIMIT) {
-        int value;
-        try {
-            value = Integer.parseInt(sc.nextLine());
-        } catch (NumberFormatException e) {
-            System.out.println(TErrors.FailData.text);
-            return cinWithChecking(sc, MAX_LIMIT, MIN_LIMIT);
-        }
+        int value = 0;
+        boolean isFail;
 
-        if (value > MAX_LIMIT || value < MIN_LIMIT) {
-            System.out.println(TErrors.FailLimitOfData.text);
-            return cinWithChecking(sc, MAX_LIMIT, MIN_LIMIT);
-        }
+        do {
+            isFail = false;
+
+            try {
+                value = Integer.parseInt(sc.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println(TErrors.FailData.text);
+                isFail = true;
+            }
+
+            if (value > MAX_LIMIT || value < MIN_LIMIT) {
+                System.out.println(TErrors.FailLimitOfData.text);
+                isFail = true;
+            }
+        } while (isFail);
 
         return value;
     }
 
     static void outElement(char element, int count, boolean isStartEndl, boolean isEndEndl) {
+        int i;
+        
         if (isStartEndl)
             System.out.print("\n");
 
-        for (int i = 0; i < count; i++)
+        for (i = 0; i < count; i++)
             System.out.print(element);
 
         if (isEndEndl)
