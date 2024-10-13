@@ -13,16 +13,16 @@ Const
     ERRORS: Array [0 .. 2] Of String =
         ('Некорректные данные. Попробуйте еще раз. ',
         'Ваше значение не соответствует числовым ограничениям. Попробуйте еще раз. ',
-        'Фигура заданными координатами не образует многоугольника');
+        'Фигура заданными координатами не образует многоуголь\ника');
     MIN_LIMIT = -1000;
     MAX_LIMIT = 1000;
 
 Var
-    I, CountOfPoints, vectorSum: Integer;
-    signOfVectorSum, sign: integer;
-    firstIndex, secondIndex, thirdIndex:Integer;
-    firstLineX, firstLineY, secondLineX, secondLineY: Integer;
-    IsFail, isEndOfFor: Boolean;
+    I, CountOfPoints, VectorSum: Integer;
+    SignOfVectorSum, Sign: Integer;
+    FirstIndex, SecondIndex, ThirdIndex: Integer;
+    FirstLineX, FirstLineY, SecondLineX, SecondLineY: Integer;
+    IsFail, IsEndOfFor: Boolean;
     PointX, PointY: Array Of Integer;
 
 Begin
@@ -52,7 +52,6 @@ Begin
     SetLength(PointX, CountOfPoints);
     SetLength(PointY, CountOfPoints);
 
-    For I := 0 To High(PointX) Do
     Begin
         Write('Введите координаты вершины (x, y) от ', MIN_LIMIT, ' до ',
             MAX_LIMIT, ' #', I + 1, ': ');
@@ -74,47 +73,44 @@ Begin
                 IsFail := True;
             End;
         Until Not IsFail;
-
-        inc(pointX[i], MAX_LIMIT);
-        inc(pointY[i], MAX_LIMIT);
     End;
 
+    IsEndOfFor := False;
     Sign := -2;
-    isEndOfFor := false;
 
-    for I := 0 to High(pointX) do
+    For I := 0 To High(PointX) Do
     Begin
         FirstIndex := I;
-        secondIndex := (i + 1) mod countOfPoints;
-		thirdIndex := (i + 2) mod countOfPoints;
+        SecondIndex := (I + 1) Mod CountOfPoints;
+        ThirdIndex := (I + 2) Mod CountOfPoints;
 
-        firstLineX := pointX[secondIndex] - pointX[FirstIndex];
-		firstLineY := pointY[secondIndex] - pointY[FirstIndex];
-		secondLineX := pointX[thirdIndex] - pointX[secondIndex];
-		secondLineY := pointY[thirdIndex] - pointY[secondIndex];
+        FirstLineX := PointX[SecondIndex] - PointX[FirstIndex];
+        FirstLineY := PointY[SecondIndex] - PointY[FirstIndex];
+        SecondLineX := PointX[ThirdIndex] - PointX[SecondIndex];
+        SecondLineY := PointY[ThirdIndex] - PointY[SecondIndex];
 
-        vectorSum := (firstLineX * secondLineY - secondLineX * firstLineY);
+        VectorSum := (FirstLineX * SecondLineY - SecondLineX * FirstLineY);
 
-        if VectorSum = 0 then
-            signOfVectorSum := 0
-        else if VectorSum > 0 then
-            signOfVectorSum := 1
-        else
-            signOfVectorSum := -1;
+        If VectorSum = 0 Then
+            SignOfVectorSum := 0
+        Else
+            SignOfVectorSum := VectorSum Div Abs(VectorSum);
 
-        if signOfVectorSum <> 0 then
-            if sign = -2 then
-                sign := signOfVectorSum
-            else if sign <> signOfVectorSum then
-                isEndOfFor := true;
+        If SignOfVectorSum <> 0 Then
+            If Sign = -2 Then
+                Sign := SignOfVectorSum
+            Else
+                If Sign <> SignOfVectorSum Then
+                    IsEndOfFor := True;
     End;
 
-    if sign = -2 then
+    If Sign = -2 Then
         Writeln(ERRORS[Ord(FigureError)])
-    else if isEndOfFor then
-        Writeln('Многоугольник не является выпуклым.')
-    else
-        Writeln('Многоугольник является выпуклым.');
+    Else
+        If IsEndOfFor Then
+            Writeln('Многоугольник не является выпуклым.')
+        Else
+            Writeln('Многоугольник является выпуклым.');
 
     Writeln('Для выхода из программы нажмите Enter...');
     Readln;
